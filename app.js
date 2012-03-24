@@ -5,8 +5,7 @@
 
 var express = require('express'),
     _       = require('underscore'),
-    redis   = require('redis'),
-    client  = redis.createClient();
+    client   = require('redis-url').connect(process.env.REDISTOGO_URL);
 
 var app = module.exports = express.createServer();
 
@@ -37,8 +36,6 @@ app.configure('production', function(){
 var alphabet = [ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 function generateID(callback) {
   var last_id = client.get('last_id', function(err, last_id) {
-    console.log(last_id);
-
     if(!last_id) {
       callback('a');
     } else {
@@ -65,7 +62,7 @@ app.get('/api/new', function(req, res) {
 
 app.post('/api/new', function(req, res) {
   generateID(function(id) {
-    client.set('last_id', id, redis.print);
+    client.set('last_id', id);
     client.set('url:' + id, req.body.url);
 
     res.json({ success: true, url: "http://sndbx.in/" + id });
